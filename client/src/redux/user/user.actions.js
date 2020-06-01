@@ -9,9 +9,10 @@ export const emailSignInStart = (emailAndPassword) => ({
   payload: emailAndPassword,
 });
 
-export const signInSuccess = (user) => ({
+export const signInSuccess = (user, preloadCart) => ({
   type: UserActionTypes.SIGN_IN_SUCCESS,
   payload: user,
+  preloadCart
 });
 
 export const signInFailure = (error) => ({

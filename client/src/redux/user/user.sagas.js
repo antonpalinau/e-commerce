@@ -1,4 +1,4 @@
-import { takeLatest, put, all, call } from "redux-saga/effects";
+import { takeLatest, put, all, call, apply } from "redux-saga/effects";
 
 import UserActionTypes from "./user.types";
 
@@ -18,11 +18,15 @@ import {
   getCurrentUser,
 } from "../../firebase/firebase.utils";
 
-export function* getSnapshotFromUserAuth(userAuth, additionalData) {
+export function* getSnapshotFromUserAuth(userAuth, additionalData, preloadCart = true) {
   try {
-    const userRef = yield call(createUserProfileDocument, userAuth, additionalData);
-    const userSnapshot = yield userRef.get();
-    yield put(signInSuccess({ id: userSnapshot.id, ...userSnapshot.data() }));
+    const userRef = yield call(
+      createUserProfileDocument,
+      userAuth,
+      additionalData
+    );
+    const userSnapshot = yield apply(userRef, userRef.get);
+    yield put(signInSuccess({ id: userSnapshot.id, ...userSnapshot.data() }, preloadCart));
   } catch (error) {
     yield put(signInFailure(error));
   }
@@ -50,7 +54,7 @@ export function* isUserAuthenticated() {
   try {
     const userAuth = yield getCurrentUser();
     if (!userAuth) return;
-    yield getSnapshotFromUserAuth(userAuth);
+    yield getSnapshotFromUserAuth(userAuth, null, false);
   } catch (error) {
     yield put(signInFailure(error));
   }
@@ -75,7 +79,7 @@ export function* signUp({ payload: { email, password, displayName } }) {
 }
 
 export function* signInAfterSignUp({ payload: { user, additionalData } }) {
-    yield getSnapshotFromUserAuth(user, additionalData);
+  yield getSnapshotFromUserAuth(user, additionalData);
 }
 
 export function* onGoogleSignInStart() {

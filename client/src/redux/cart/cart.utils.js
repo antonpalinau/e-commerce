@@ -29,3 +29,31 @@ export const removeItemFromCart = (cartItems, cartItemToRemove) => {
       : cartItem
   );
 };
+
+export const clearItemFromCart = (cartItems, cartItemToClear) =>
+  cartItems.filter((cartItem) => cartItem.id !== cartItemToClear.id);
+
+export const mergeCarts = (firestoreCart, localCart) => {
+  const itemsNotInFirestoreCart = localCart.filter(
+    (localCartItem) =>
+      !firestoreCart.some(
+        (firestoreCartItem) => firestoreCartItem.id === localCartItem.id
+      )
+  );
+
+  return [
+    ...firestoreCart.map((firestoreCartItem) => {
+      const cartItem = localCart.find(
+        (localCartItem) => localCartItem.id === firestoreCartItem.id
+      );
+
+      return cartItem
+        ? {
+            ...firestoreCartItem,
+            quantity: firestoreCartItem.quantity + cartItem.quantity,
+          }
+        : firestoreCartItem;
+    }),
+    ...itemsNotInFirestoreCart,
+  ];
+};

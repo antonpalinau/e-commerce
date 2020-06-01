@@ -56,6 +56,29 @@ export const addCollectionsAndDocuments = async (
   return await batch.commit();
 };
 
+export const updateFirestoreCartItems = (user, cartItems) => {
+  firestore.collection('carts').doc(user.id).set({
+    items: cartItems
+  })
+}
+
+export const getUserCartData = async (id) => {
+  const cartRef = firestore.collection('carts').doc(id);
+  const cartSnapshot = await cartRef.get();
+
+  if (!cartSnapshot.exists) {
+    firestore.collection('carts').doc(id).set({
+      items: []
+    })
+
+    return [];
+  }
+
+  const { items } = cartSnapshot.data();
+
+  return items;
+}
+
 export const convertCollectionsSnapshotToMap = (collections) => {
   const transformedCollection = collections.docs.map((doc) => {
     const { title, items } = doc.data();
